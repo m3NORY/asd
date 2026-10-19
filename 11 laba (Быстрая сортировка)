@@ -1,0 +1,25 @@
+def quick_sort(arr):
+    if len(arr) <= 1:
+        return arr
+
+    pivot = arr[len(arr) // 2]
+
+    left = []
+    middle = []
+    right = []
+
+    for number in arr:
+        if number < pivot:
+            left.append(number)
+        elif number == pivot:
+            middle.append(number)
+        else:
+            right.append(number)
+
+    return quick_sort(left) + middle + quick_sort(right)
+
+
+numbers = list(map(int, input("Введите числа через пробел: ").split()))
+
+print("Исходный список:", numbers)
+print("Отсортированный список:", quick_sort(numbers))
