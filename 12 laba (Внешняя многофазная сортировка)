@@ -1,0 +1,55 @@
+import heapq
+import os
+
+
+def external_sort(numbers, chunk_size=3):
+    files = ["file1.txt", "file2.txt", "file3.txt"]
+
+    # Разбиваем числа на отсортированные серии
+    chunks = []
+
+    for i in range(0, len(numbers), chunk_size):
+        chunk = sorted(numbers[i:i + chunk_size])
+        chunks.append(chunk)
+
+    # Записываем серии в два файла
+    for name in files:
+        open(name, "w").close()
+
+    for i, chunk in enumerate(chunks):
+        filename = files[i % 2]
+
+        with open(filename, "a") as file:
+            file.write(" ".join(map(str, chunk)) + "\n")
+
+    # Читаем серии из двух файлов
+    all_chunks = []
+
+    for filename in files[:2]:
+        with open(filename, "r") as file:
+            for line in file:
+                if line.strip():
+                    chunk = list(map(int, line.split()))
+                    all_chunks.append(chunk)
+
+    # Объединяем отсортированные серии
+    result = list(heapq.merge(*all_chunks))
+
+    # Записываем результат в третий файл
+    with open(files[2], "w") as file:
+        file.write(" ".join(map(str, result)))
+
+    return result
+
+
+numbers = list(map(int, input("Введите числа через пробел: ").split()))
+
+result = external_sort(numbers)
+
+print("Отсортированный список:", result)
+print("Результат сохранён в файле file3.txt")
+
+# Удаляем временные файлы
+for filename in ["file1.txt", "file2.txt"]:
+    if os.path.exists(filename):
+        os.remove(filename)
