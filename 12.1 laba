@@ -1,0 +1,138 @@
+
+import json
+
+
+def merge(left, right):
+    result = []
+    i = 0
+    j = 0
+
+    while i < len(left) and j < len(right):
+        if left[i] <= right[j]:
+            result.append(left[i])
+            i += 1
+        else:
+            result.append(right[j])
+            j += 1
+
+    while i < len(left):
+        result.append(left[i])
+        i += 1
+
+    while j < len(right):
+        result.append(right[j])
+        j += 1
+
+    return result
+
+
+def read_file(filename):
+    with open(filename, "r", encoding="utf-8") as file:
+        return [json.loads(line) for line in file]
+
+
+def write_file(filename, runs):
+    with open(filename, "w", encoding="utf-8") as file:
+        for run in runs:
+            file.write(json.dumps(run) + "\n")
+
+
+def polyphase_sort(numbers, chunk_size=3):
+    if not numbers:
+        return []
+
+    filenames = ["file1.txt", "file2.txt", "file3.txt"]
+
+    # Создаём начальные отсортированные серии
+    runs = []
+
+    for i in range(0, len(numbers), chunk_size):
+        run = numbers[i:i + chunk_size]
+        run.sort()
+        runs.append(run)
+
+    if len(runs) == 1:
+        write_file(filenames[0], runs)
+        return runs[0]
+
+    # Находим числа Фибоначчи для распределения серий
+    a = 1
+    b = 1
+
+    while a + b < len(runs):
+        a, b = b, a + b
+
+    # Добавляем фиктивные пустые серии при необходимости
+    while len(runs) < a + b:
+        runs.append(None)
+
+    # Распределяем серии по двум файлам
+    tape1 = runs[:a]
+    tape2 = runs[a:]
+    tape3 = []
+
+    tapes = [tape1, tape2, tape3]
+
+    for i in range(3):
+        write_file(filenames[i], tapes[i])
+
+    # Выполняем многофазное слияние
+    while sum(
+        1 for tape in tapes
+        for run in tape if run is not None
+    ) > 1:
+
+        # Находим пустой файл для записи результата
+        output_index = next(
+            i for i in range(3) if len(tapes[i]) == 0
+        )
+
+        input_indexes = [
+            i for i in range(3) if i != output_index
+        ]
+
+        first_index = input_indexes[0]
+        second_index = input_indexes[1]
+
+        first = tapes[first_index]
+        second = tapes[second_index]
+
+        output = []
+
+        # Сливаем серии попарно
+        while first and second:
+            left = first.pop(0)
+            right = second.pop(0)
+
+            if left is None and right is None:
+                output.append(None)
+            elif left is None:
+                output.append(right)
+            elif right is None:
+                output.append(left)
+            else:
+                output.append(merge(left, right))
+
+        tapes[output_index] = output
+
+        # Сохраняем оставшиеся серии и результат в файлы
+        for i in range(3):
+            write_file(filenames[i], tapes[i])
+
+    # Находим последнюю отсортированную серию
+    for tape in tapes:
+        for run in tape:
+            if run is not None:
+                return run
+
+    return []
+
+
+numbers = list(map(int, input("Введите числа через пробел: ").split()))
+
+print("Исходный массив:", numbers)
+
+result = polyphase_sort(numbers)
+
+print("Отсортированный массив:", result)
+print("Результат сохранён в файлах file1.txt, file2.txt и file3.txt")
