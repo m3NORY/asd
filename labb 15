@@ -1,0 +1,117 @@
+
+class Node:
+    def __init__(self, data):
+        self.data = data
+        self.next = None
+
+
+class LinkedList:
+    def __init__(self):
+        self.head = None
+
+    # Добавление элемента в конец списка
+    def append(self, data):
+        new_node = Node(data)
+
+        if self.head is None:
+            self.head = new_node
+            return
+
+        current = self.head
+
+        while current.next is not None:
+            current = current.next
+
+        current.next = new_node
+
+    # Вывод списка
+    def display(self):
+        if self.head is None:
+            print("Список пуст")
+            return
+
+        current = self.head
+
+        while current is not None:
+            print(current.data, end=" -> ")
+            current = current.next
+
+        print("None")
+
+    # Удаление элемента по значению
+    def delete(self, value):
+        if self.head is None:
+            print("Список пуст")
+            return
+
+        if self.head.data == value:
+            self.head = self.head.next
+            print("Элемент удалён")
+            return
+
+        current = self.head
+
+        while current.next is not None:
+            if current.next.data == value:
+                current.next = current.next.next
+                print("Элемент удалён")
+                return
+
+            current = current.next
+
+        print("Элемент не найден")
+
+    # Сортировка по возрастанию
+    def sort(self):
+        if self.head is None:
+            return
+
+        current = self.head
+
+        while current is not None:
+            second = current.next
+
+            while second is not None:
+                if current.data > second.data:
+                    current.data, second.data = second.data, current.data
+
+                second = second.next
+
+            current = current.next
+
+        print("Список отсортирован")
+
+
+# Главная программа
+my_list = LinkedList()
+
+while True:
+    print("\n===== ОДНОСВЯЗНЫЙ СПИСОК =====")
+    print("1. Добавить элемент")
+    print("2. Удалить элемент")
+    print("3. Показать список")
+    print("4. Отсортировать список")
+    print("5. Выход")
+
+    choice = input("Выберите действие: ")
+
+    if choice == "1":
+        number = float(input("Введите число: "))
+        my_list.append(number)
+
+    elif choice == "2":
+        number = float(input("Введите число для удаления: "))
+        my_list.delete(number)
+
+    elif choice == "3":
+        my_list.display()
+
+    elif choice == "4":
+        my_list.sort()
+
+    elif choice == "5":
+        print("Программа завершена")
+        break
+
+    else:
+        print("Неверный пункт меню")
