@@ -1,0 +1,106 @@
+
+class Node:
+    def __init__(self, val):
+        self.val = val
+        self.left = None
+        self.right = None
+
+
+class ParseError(Exception):
+    pass
+
+
+class Parser:
+    def __init__(self, text):
+        self.s = text
+        self.pos = 0
+
+    def skip_spaces(self):
+        while self.pos < len(self.s) and self.s[self.pos].isspace():
+            self.pos += 1
+
+    # узел ::= [число [ '(' узел ',' узел ')' ]]   (пустой узел = нет вершины)
+    def parse_node(self):
+        self.skip_spaces()
+        if self.pos >= len(self.s) or self.s[self.pos] in ",)":
+            return None  # пустое поддерево
+
+        start = self.pos
+        if self.s[self.pos] in "+-":
+            self.pos += 1
+        digits = self.pos
+        while self.pos < len(self.s) and self.s[self.pos].isdigit():
+            self.pos += 1
+        if self.pos == digits:
+            raise ParseError("ожидалось число")
+        node = Node(int(self.s[start:self.pos]))
+
+        self.skip_spaces()
+        if self.pos < len(self.s) and self.s[self.pos] == "(":
+            self.pos += 1
+            node.left = self.parse_node()
+            self.skip_spaces()
+            if self.pos >= len(self.s) or self.s[self.pos] != ",":
+                raise ParseError("ожидалась запятая")
+            self.pos += 1
+            node.right = self.parse_node()
+            self.skip_spaces()
+            if self.pos >= len(self.s) or self.s[self.pos] != ")":
+                raise ParseError("ожидалась закрывающая скобка")
+            self.pos += 1
+        return node
+
+    def parse(self):
+        root = self.parse_node()
+        self.skip_spaces()
+        if self.pos != len(self.s):
+            raise ParseError("лишние символы в конце строки")
+        return root
+
+
+def preorder(t, out):
+    if t is None:
+        return
+    out.append(t.val)
+    preorder(t.left, out)
+    preorder(t.right, out)
+
+
+def inorder(t, out):
+    if t is None:
+        return
+    inorder(t.left, out)
+    out.append(t.val)
+    inorder(t.right, out)
+
+
+def postorder(t, out):
+    if t is None:
+        return
+    postorder(t.left, out)
+    postorder(t.right, out)
+    out.append(t.val)
+
+
+def main():
+    s = input("Введите дерево в линейно-скобочной записи: ")
+    try:
+        root = Parser(s).parse()
+    except ParseError:
+        print("Ошибка: неверная запись дерева")
+        return
+    if root is None:
+        print("Дерево пустое")
+        return
+
+    a, b, c = [], [], []
+    preorder(root, a)
+    inorder(root, b)
+    postorder(root, c)
+    print("Прямой обход (корень-левое-правое):     ", *a)
+    print("Центральный обход (левое-корень-правое):", *b)
+    print("Концевой обход (левое-правое-корень):   ", *c)
+
+
+if __name__ == "__main__":
+    main()
